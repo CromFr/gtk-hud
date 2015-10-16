@@ -1,0 +1,6 @@
+name "gtk-hud"
+description "HUD to search entries in application menus"
+copyright "Copyright © 2015, Thibaut CHARLES"
+authors "Thibaut CHARLES (Crom)"
+dependency "gtk-d"  version="~>3.1.5"
+dependency "xcb-d"  version="~>1.11.0"

@@ -1,0 +1,8 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"xcb-d": "1.11.0",
+		"gtk-d": "3.1.5",
+		"dunit": "1.0.11"
+	}
+}

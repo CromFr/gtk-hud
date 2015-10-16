@@ -1,0 +1,15 @@
+#Dub
+.dub
+docs.json
+__dummy.html
+*.o
+*.obj
+
+
+#Application
+gtk-hud
+
+
+#Providers
+providers/*/*.o
+providers/*/*.so
