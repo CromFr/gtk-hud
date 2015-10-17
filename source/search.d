@@ -1,9 +1,12 @@
 module search;
 
-import std.string;
-import std.algorithm;
 import std.stdio;
+import std.string;
+import std.uni;
+import std.algorithm;
+import std.conv : to;
 import std.typecons : Tuple;
+import std.traits : isSomeString;
 
 
 
@@ -21,14 +24,14 @@ alias FuzzyMatch = Tuple!(uint,"strength",size_t[],"indexes");
 //Return:
 //  strength: 0 if dont match, otherwise a number >0
 //  indexes: char indexes in the text that match the best.
-FuzzyMatch fuzzyMatch(in string text, in string pattern){
+FuzzyMatch fuzzyMatch(S)(in S text, in S pattern) if(isSomeString!S){
 	if(pattern is null || text is null)
 		return FuzzyMatch(1,null);
 
 	size_t[][] validIndexes;
 	recurMatch(text, pattern, validIndexes);
 
-	////print
+	////print indexes
 	//foreach(indexes ; validIndexes){
 	//	string outText;
 	//	size_t lastIndex = 0;
@@ -52,7 +55,7 @@ FuzzyMatch fuzzyMatch(in string text, in string pattern){
 			if(i>0 && indexes[i-1]==index-1)
 				strength+=5;//Consecutive match
 
-			if(text[index].toLower != text[index])
+			if(text[index].isUpper)
 				strength+=1;//Capital letter
 		}
 
@@ -66,7 +69,7 @@ FuzzyMatch fuzzyMatch(in string text, in string pattern){
 }
 
 private
-void recurMatch(in string txt, in string pat, ref size_t[][] validIndexes, size_t[] currentIndexes=null){
+void recurMatch(S)(in S txt, in S pat, ref size_t[][] validIndexes, size_t[] currentIndexes=null) if(isSomeString!S){
 
 	if(txt.length==0 && pat.length>0)
 		return;//no text and yet some chars to match
@@ -94,7 +97,7 @@ unittest{
 }
 
 private
-size_t[] indexList(in string text, in char c, size_t _=0){
+size_t[] indexList(S)(in S text, in dchar c, size_t _=0) if(isSomeString!S){
 	auto found = text.indexOf(c, 0, CaseSensitive.no);
 	if(found==-1)
 		return null;

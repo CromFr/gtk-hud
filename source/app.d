@@ -129,12 +129,11 @@ class Window : MainWindow{
 
 
 		searchBox.getBuffer.addOnChanged((TextBuffer tb){
-				immutable pattern = tb.getText;
 				listBox
 					.getChildren
 					.toArray!(ListBoxRow)
 					.map!(a=>cast(EntryWidget)(a.getChild))
-					.each!(a=>a.searchQuery(pattern));
+					.each!(a=>a.searchQuery(tb.getText));
 
 				listBox.invalidateFilter;
 				listBox.invalidateSort;
@@ -287,25 +286,27 @@ class EntryWidget : Box{
 	}
 
 	void searchQuery(in string pattern){
-		auto res = fuzzyMatch(entry.path, pattern);
+		immutable pathDstring = entry.path.to!dstring;
+
+		auto res = fuzzyMatch(pathDstring, pattern.to!dstring);
 		m_searchStrength = res.strength;
 
 		lblName.setText(entry.path.baseName~" ("~searchStrength.to!string~")");
 
 		if(m_searchStrength>0){
-			string markup;
+			dstring markup;
 			size_t lastIndex = 0;
 			foreach(index ; res.indexes){
-				markup ~= entry.path[lastIndex .. index]
+				markup ~= pathDstring[lastIndex .. index]
 					~"<span bgcolor=\"#FF9800A0\">"
-					~entry.path[index]
+					~pathDstring[index]
 					~"</span>";
 
 				lastIndex = index+1;
 			}
-			markup ~= entry.path[lastIndex .. $];
+			markup ~= pathDstring[lastIndex .. $];
 
-			lblPath.setMarkup(markup);
+			lblPath.setMarkup(markup.to!string);
 		}
 		else{
 			lblPath.setMarkup(entry.path);
