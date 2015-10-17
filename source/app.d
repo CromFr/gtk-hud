@@ -119,7 +119,7 @@ class Window : MainWindow{
 				else if(entryWidget1.searchStrength>entryWidget2.searchStrength)
 					return -1;
 				else
-					return 0;
+					return entryWidget1.id<entryWidget2.id? -1 : 1;
 			}
 			setSortFunc(&sortFunc, null, null);
 		}
@@ -137,39 +137,15 @@ class Window : MainWindow{
 
 				listBox.invalidateFilter;
 				listBox.invalidateSort;
-			
+
+				if(!listBox.getSelectedRow.isDrawable)
+					selectRowAbsolute(0);
+				else
+					selectRowRelative(0);
 			});
 
 		addOnKeyPress((Event e, Widget w){
-			void moveSelection(int delta){
-				if(listBoxLength==0) return;
-
-				auto rows = listBox
-					.getChildren
-					.toArray!(ListBoxRow)
-					.remove!(a=>!a.getChild.isDrawable);
-
-				if(rows.length>0){
-					int newIndex = cast(int)(listBox.getSelectedRow.getIndex)+delta;
-					writeln(newIndex);
-					if(newIndex<=0)
-						newIndex=0;
-					else if(newIndex>=rows.length)
-						newIndex=cast(int)(rows.length)-1;
-
-					writeln(newIndex);
-					auto row = rows[newIndex];
-					listBox.selectRow(row);
-
-					//scroll to selection
-					int rowX, rowY;
-					row.translateCoordinates(listBox, 0, 0, rowX, rowY);
-					listBox.getAdjustment().clampPage(
-						rowY,
-						rowY+row.getAllocatedHeight);
-
-				}
-			}
+			
 
 			import gdk.Keysyms;
 			uint keyval;
@@ -184,13 +160,13 @@ class Window : MainWindow{
 					return true;
 
 				case GDK_Down:
-					moveSelection(+1);
+					selectRowRelative(+1);
 					return true;
 				case GDK_Up:
-					moveSelection(-1);
+					selectRowRelative(-1);
 					return true;
 				case GDK_Tab, GDK_ISO_Left_Tab:
-					moveSelection(e.key.state&ModifierType.SHIFT_MASK? -1 : +1);
+					selectRowRelative(e.key.state&ModifierType.SHIFT_MASK? -1 : +1);
 					return true;
 
 				default:
@@ -205,6 +181,54 @@ class Window : MainWindow{
 		showAll();
 	}
 
+	void selectRowRelative(int delta){
+		if(listBoxLength==0) return;
+
+		auto rows = listBox
+			.getChildren
+			.toArray!(ListBoxRow)
+			.remove!(a=>!a.isDrawable);
+
+		if(rows.length>0){
+			int newIndex = cast(int)(listBox.getSelectedRow.getIndex)+delta;
+			if(newIndex<=0)
+				newIndex=0;
+			else if(newIndex>=rows.length)
+				newIndex=cast(int)(rows.length)-1;
+
+			auto row = rows[newIndex];
+			listBox.selectRow(row);
+
+			//scroll to selection
+			int rowX, rowY;
+			row.translateCoordinates(listBox, 0, 0, rowX, rowY);
+			listBox.getAdjustment().clampPage(
+				rowY,
+				rowY+row.getAllocatedHeight);
+		}
+	}
+	void selectRowAbsolute(int index){
+		if(listBoxLength==0) return;
+
+		auto rows = listBox
+			.getChildren
+			.toArray!(ListBoxRow)
+			.remove!(a=>!a.isDrawable);
+
+		if(rows.length>0){
+			auto row = rows[index];
+			listBox.selectRow(row);
+
+			//scroll to selection
+			int rowX, rowY;
+			row.translateCoordinates(listBox, 0, 0, rowX, rowY);
+			listBox.getAdjustment().clampPage(
+				rowY,
+				rowY+row.getAllocatedHeight);
+		}
+	}
+
+
 	TextView searchBox;
 	ListBox listBox;
 	ScrolledWindow listBoxScroll;
@@ -217,12 +241,11 @@ private:
 		listBox.removeAll();
 		listBoxLength = 0;
 
-		db
-			.each!((e){
-				auto wid = new EntryWidget(cast(immutable)e);
-				listBox.add(wid);
-				listBoxLength++;
-			});
+		foreach(uint i, e ; db){
+			auto wid = new EntryWidget(cast(immutable)e, i);
+			listBox.add(wid);
+			listBoxLength++;
+		}
 		listBox.showAll();
 		listBox.selectRow(listBox.getRowAtIndex(0));
 	}
@@ -234,9 +257,10 @@ private:
 
 import gtk.Box;
 class EntryWidget : Box{
-	this(in immutable MenuEntry e){
+	this(in immutable MenuEntry _entry, uint _id){
 		super(Orientation.HORIZONTAL, 0);
-		entry = e;
+		entry = _entry;
+		id = _id;
 		import gtk.Box;
 		import gtk.Label;
 
@@ -319,6 +343,7 @@ class EntryWidget : Box{
 	}
 
 	immutable MenuEntry entry;
+	immutable uint id;
 
 private:
 	import gtk.Label;
