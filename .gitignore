@@ -8,8 +8,5 @@ __dummy.html
 
 #Application
 gtk-hud
-
-
-#Providers
-providers/*/*.o
-providers/*/*.so
+*.exe
+*.lib
