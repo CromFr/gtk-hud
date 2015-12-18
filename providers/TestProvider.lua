@@ -13,7 +13,7 @@ function init()
 end
 
 
-function getMenuList()
+function getEntries()
 	print("TestProvider.getMenuList")
 	return {
 		{

@@ -18,10 +18,10 @@ class ProviderList{
 	}
 
 	
-	Entry[] menuList(){
+	Entry[] entries(){
 		Entry[] ret;
 		foreach(p ; providers){
-			ret ~= p.menuList;
+			ret ~= p.entries;
 		}
 		return ret;
 	}
@@ -43,12 +43,12 @@ class Provider{
 
 
 	package
-	Entry[] menuList(){
+	Entry[] entries(){
 		import std.stdio;
 		Entry[] ret;
-		ret = lua.get!LuaFunction("getMenuList").call!(Entry[])();
-		//lua.doString("menuList = getMenuList()");
-		//ret ~= lua.get!LuaTable("menuList").toStruct!Entry;
+		ret = lua.get!LuaFunction("getEntries").call!(Entry[])();
+		//lua.doString("entries = getEntries()");
+		//ret ~= lua.get!LuaTable("entries").toStruct!Entry;
 
 
 		return ret;

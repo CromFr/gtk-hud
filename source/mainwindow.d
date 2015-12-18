@@ -151,8 +151,8 @@ class Window : MainWindow{
 		});
 
 		auto prov = new ProviderList("providers/");//TODO
-		auto menuList = prov.menuList;
-		populateListBox(menuList);
+		auto entries = prov.entries;
+		populateListBox(entries);
 		showAll();
 	}
 
