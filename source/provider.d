@@ -35,10 +35,12 @@ private:
 
 class Provider{
 	this(in DirEntry file){
+		import luaapi;
 		luaFile = file;
 
 		lua = new LuaState;
 		lua.openLibs();
+		lua.luaapiSetupState();
 
 		lua.doFile(luaFile);
 		lua.doString("init()");
