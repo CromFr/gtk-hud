@@ -217,7 +217,7 @@ private:
 		listBoxLength = 0;
 
 		foreach(uint i, e ; db){
-			auto wid = new EntryWidget(cast(immutable)e, i);
+			auto wid = new EntryWidget(e, i);
 			listBox.add(wid);
 			listBoxLength++;
 		}
@@ -232,7 +232,7 @@ private:
 
 import gtk.Box;
 class EntryWidget : Box{
-	this(in immutable Entry _entry, uint _id){
+	this(ref Entry _entry, uint _id){
 		super(Orientation.HORIZONTAL, 0);
 		entry = _entry;
 		id = _id;
@@ -267,21 +267,10 @@ class EntryWidget : Box{
 		contB.add(lblPath);
 
 		packStart(contB, true, true, 0);
-
-
-		//import gtk.Popover;
-		//auto popover = new Popover(this);
-		//popover.setPosition(GtkPositionType.RIGHT);
-		//popover.add(new Label("yoloooo"));
-		//popover.setModal(false);
-		//popover.showAll();
-
-
 	}
 
 	void launch(){
-		writeln("Activated ",lblPath.getText);
-		//TODO
+		entry.provider.execute(entry);
 	}
 
 	void searchQuery(in string pattern){
@@ -317,7 +306,7 @@ class EntryWidget : Box{
 		}
 	}
 
-	immutable Entry entry;
+	Entry entry;
 	immutable uint id;
 
 private:

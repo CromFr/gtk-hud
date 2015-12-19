@@ -14,7 +14,7 @@ end
 
 
 function getEntries()
-	print("TestProvider.getMenuList")
+	print("TestProvider.getEntries")
 	return {
 		{
 			name = "EntryExample";
@@ -28,4 +28,10 @@ function getEntries()
 			-- customData = nil;
 		}
 	}
+end
+
+
+function execute(entry)
+	print("TestProvider.execute")
+	print("executing: "..entry["name"].." ("..entry["fullName"]..")")
 end

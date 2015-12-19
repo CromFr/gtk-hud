@@ -1,6 +1,7 @@
 import std.file;
 import std.conv : to;
 import std.algorithm;
+import std.array;
 import std.string;
 import std.typecons;
 import luad.all;
@@ -34,31 +35,32 @@ private:
 
 class Provider{
 	this(in DirEntry file){
+		luaFile = file;
+
 		lua = new LuaState;
 		lua.openLibs();
 
-		lua.doFile(file);
+		lua.doFile(luaFile);
 		lua.doString("init()");
 	}
+	void execute(Entry entry){
+		lua.get!LuaFunction("execute").call(entry.luaEntry);
+	}
 
+	immutable DirEntry luaFile;
 
-	package
+package:
 	Entry[] entries(){
 		import std.stdio;
-		Entry[] ret;
-		ret = lua.get!LuaFunction("getEntries").call!(Entry[])();
+		LuaEntry[] ret = lua
+			.get!LuaFunction("getEntries")
+			.call!(LuaEntry[])();
+
 		//lua.doString("entries = getEntries()");
-		//ret ~= lua.get!LuaTable("entries").toStruct!Entry;
+		//ret ~= lua.get!LuaTable("entries").toStruct!LuaEntry;
 
-
-		return ret;
+		return ret.map!((e){return Entry(e, this);}).array;
 	}
-
-	void execMenu(ref Entry menu){
-	}
-
-
-		
 
 private:
 	LuaState lua;
