@@ -10,3 +10,4 @@ __dummy.html
 gtk-hud
 *.exe
 *.lib
+*.dll
