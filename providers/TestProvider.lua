@@ -17,7 +17,7 @@ function getEntries()
 	print("TestProvider.getEntries")
 	return {
 		{
-			name = "EntryExample";
+			name = "EntryExample 1";
 			fullName = "/c/.../yolo";
 			-- shortcut = "";
 			-- customData = nil;
