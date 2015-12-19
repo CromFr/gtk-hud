@@ -28,7 +28,7 @@ class Window : MainWindow{
 		setDecorated(false);
 		setPosition(WindowPosition.CENTER_ALWAYS);
 		setResizable(false);
-		setSizeRequest(300, 500);
+		setSizeRequest(400, 600);
 
 		setVisual(getScreen.getRgbaVisual);
 		setOpacity(0.95);
@@ -150,7 +150,7 @@ class Window : MainWindow{
 			}
 		});
 
-		auto prov = new ProviderList("providers/");//TODO
+		auto prov = new ProviderList("providers/");
 		auto entries = prov.entries;
 		populateListBox(entries);
 		showAll();
@@ -242,11 +242,13 @@ class EntryWidget : Box{
 		lblName = new Label(entry.name);
 		with(lblName){
 			setHalign(Align.START);
+			setLineWrap(true);
 			getStyleContext().addClass("hud-entry-name");
 		}
 		lblPath = new Label(entry.fullName);
 		with(lblPath){
 			setHalign(Align.START);
+			setLineWrap(true);
 			getStyleContext().addClass("hud-entry-fullname");
 		}
 
@@ -286,7 +288,7 @@ class EntryWidget : Box{
 			size_t lastIndex = 0;
 			foreach(index ; res.indexes){
 				markup ~= fullNameDstring[lastIndex .. index]
-					~"<span bgcolor=\"#FF9800A0\">"
+					~"<span bgcolor=\"#FF9800\">"
 					~fullNameDstring[index]
 					~"</span>";
 
