@@ -7,6 +7,7 @@ import std.process;
 import provider;
 import search;
 import entry;
+import settingswindow;
 
 
 import gtk.MainWindow;
@@ -51,6 +52,12 @@ class Window : MainWindow{
 			}
 			.hud-entry-fullname{
 				opacity: 0.5;
+			}
+			.hud-settings-bgdarker{
+				background-color: darker (rgba(0,0,0,0.1));
+			}
+			.hud-settings-nobg{
+				background-color: rgba(0,0,0,0);
 			}
 		}");
 		StyleContext.addProviderForScreen(getScreen, css, 800);
@@ -148,6 +155,10 @@ class Window : MainWindow{
 					return true;
 				case GDK_Tab, GDK_ISO_Left_Tab:
 					selectRowRelative(e.key.state&ModifierType.SHIFT_MASK? -1 : +1);
+					return true;
+
+				case GDK_Left://TODO: add entry to display window
+					new SettingsWindow(this);//TODO: Construct the window earlier
 					return true;
 
 				default:
@@ -293,7 +304,7 @@ class EntryWidget : Box{
 			size_t lastIndex = 0;
 			foreach(index ; res.indexes){
 				markup ~= fullNameDstring[lastIndex .. index]
-					~"<span bgcolor=\"#FF9800\">"
+					~"<span bgcolor=\"#FF9800A0\">"
 					~fullNameDstring[index]
 					~"</span>";
 

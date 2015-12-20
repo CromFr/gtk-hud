@@ -28,28 +28,65 @@ class ProviderList{
 	}
 
 
-private:
 	Provider[] providers;
 }
 
 
 class Provider{
 	this(in DirEntry file){
-		import luaapi;
+		import std.path;
 		luaFile = file;
+		name = file.baseName.stripExtension;
+		reloadFile();
+	}
+	void reloadFile(){
+		import luaapi;
 
+		if(lua !is null)lua.destroy();
 		lua = new LuaState;
 		lua.openLibs();
 		lua.luaapiSetupState();
 
 		lua.doFile(luaFile);
 		lua.doString("init()");
+
+		settings.destroy();
+		auto settingsLua = lua.get!(Setting[string])("settings");
+		foreach(code, setting ; settingsLua){
+			setting.code = code;
+			settings~=setting;
+		}
 	}
+
 	void execute(Entry entry){
 		lua.get!LuaFunction("execute").call(entry.luaEntry);
 	}
 
-	immutable DirEntry luaFile;
+	void setSettingValue(in string code, in string value){
+		//TODO
+		//lua["settings"][code]["value"] = value;
+	}
+	const Setting[] getSettings(){return settings.dup;}
+
+	immutable string name;
+
+
+	struct Setting{
+		string name;
+		string description;
+		string type;
+		string value;
+		string code;
+	}
+	enum SettingType : string{
+		FOLDER = "folder",
+		FILE   = "file",
+		PATH   = "path",
+		STRING = "string",
+		INT    = "int",
+		FLOAT  = "float",
+		BOOL  = "bool",
+	}
 
 package:
 	Entry[] entries(){
@@ -58,12 +95,11 @@ package:
 			.get!LuaFunction("getEntries")
 			.call!(LuaEntry[])();
 
-		//lua.doString("entries = getEntries()");
-		//ret ~= lua.get!LuaTable("entries").toStruct!LuaEntry;
-
 		return ret.map!((e){return Entry(e, this);}).array;
 	}
 
 private:
+	DirEntry luaFile;
 	LuaState lua;
+	Setting[] settings;
 }
