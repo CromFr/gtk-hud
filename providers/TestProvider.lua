@@ -1,10 +1,5 @@
 
 settings = {
-	path = {
-		fullName = "Path",
-		value = "",
-		valueType = "folder"
-	}
 }
 
 

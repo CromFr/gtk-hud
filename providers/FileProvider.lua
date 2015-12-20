@@ -1,9 +1,14 @@
 
 settings = {
 	path = {
-		fullName = "Path",
+		name = "Path",
 		value = [[C:\Users\Crom\AppData\Roaming\Microsoft\Windows\Start Menu]],
 		valueType = "folder"
+	},
+	recursive = {
+		name = "Recursive",
+		value = "true",
+		valueType = "bool"
 	}
 }
 
@@ -51,6 +56,7 @@ function execute(entry)
 		os.execute('"'..entry["fullName"]..'"&')
 	elseif dirsep=="\\" then
 		-- Windows
-		os.execute('START "'..entry["fullName"]..'" "'..entry["fullName"]..'"')
+		fullPath = settings.path.value..entry["fullName"];
+		os.execute('START "'..fullPath..'" "'..fullPath..'"')
 	end
 end
