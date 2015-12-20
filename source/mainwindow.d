@@ -122,10 +122,7 @@ class Window : MainWindow{
 				listBox.invalidateFilter;
 				listBox.invalidateSort;
 
-				if(!listBox.getSelectedRow.isDrawable)
-					selectRowAbsolute(0);
-				else
-					selectRowRelative(0);
+				selectRowAbsolute(0);
 			});
 
 		addOnKeyPress((Event e, Widget w){
