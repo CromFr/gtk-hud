@@ -70,7 +70,15 @@ class Window : MainWindow{
 		with(listBox){
 			setActivateOnSingleClick(true);
 			import gtk.Image;
-			setPlaceholder(new Image("face-sad-symbolic", IconSize.DIALOG));//TODO: not visible
+			auto placeholder = new Box(Orientation.VERTICAL, 10);
+			with(placeholder){
+				setValign(Align.CENTER);
+				add(new Image("face-sad-symbolic", IconSize.DIALOG));
+				add(new Label("Nothing matched your search"));
+				showAll();
+			}
+			setPlaceholder(placeholder);
+
 			addOnRowActivated((ListBoxRow row, ListBox lb){
 					(cast(EntryWidget)(row.getChild)).launch();
 					close();
