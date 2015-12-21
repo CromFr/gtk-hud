@@ -25,7 +25,31 @@ class SettingsWindow : Window{
 
 		//General
 		//TODO
-		notebook.appendPage(new Label("yolo"), "General");
+		auto generalListBox = new ListBox;
+		notebook.appendPage(generalListBox, "General");
+		with(generalListBox){
+			auto opacityBox = new Box(Orientation.HORIZONTAL, 10);
+			add(opacityBox);
+			with(opacityBox){
+				packStart(new Label("Window opacity"), false, false, 0);
+
+				import gtk.Scale;
+				auto scale = new Scale(Orientation.HORIZONTAL, 0.0, 1.0, 0.01);
+				packEnd(scale, true, true, 0);
+				with(scale){
+					setValue(parent.getOpacity);//TODO: not very clean
+					setDrawValue(true);
+					setDigits(2);
+					addOnChangeValue((scrollType, newValue, rng){
+						import std.stdio;
+						writeln("Opacity: ",newValue);
+						parent.setOpacity(newValue);
+						//TODO: set in config
+						return false;
+					});
+				}
+			}
+		}
 
 		//Providers
 		auto providersCont = new Box(Orientation.HORIZONTAL, 0);
@@ -57,8 +81,8 @@ class SettingsWindow : Window{
 						enableButtonBox.add(enableButton);
 						with(enableButton){
 							//TODO: setActive(config value)
+
 							addOnStateSet((newstate, but){
-								import std.stdio; writeln("Activated ",newstate);
 								new ListBox(cast(GtkListBox*)(but.getData("target")))
 									.setSensitive(newstate);
 								return false;
@@ -108,14 +132,14 @@ private:
 
 class ProviderSettingWidget : Box{
 	this(ref Provider.Setting setting){
-		super(Orientation.HORIZONTAL, 0);
+		super(Orientation.HORIZONTAL, 5);
 
-		packStart(new Label(setting.name), true, true, 0);
+		packStart(new Label(setting.name), false, false, 0);
 
 		setTooltipMarkup(setting.description);
 
 		auto entry = new GtkEntry;
-		packEnd(entry, false, false, 0);
+		packEnd(entry, true, true, 0);
 		entry.setText(setting.value);
 	}
 }
