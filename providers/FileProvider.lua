@@ -3,12 +3,14 @@ settings = {
 	path = {
 		name = "Path",
 		value = [[C:\Users\Crom\AppData\Roaming\Microsoft\Windows\Start Menu]],
-		valueType = "folder"
+		valueType = "Folder",
+		description = "The base folder where files will be listed"
 	},
 	recursive = {
 		name = "Recursive",
 		value = "true",
-		valueType = "bool"
+		valueType = "Bool",
+		description = "Search recursively in path"
 	}
 }
 

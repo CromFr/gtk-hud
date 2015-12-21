@@ -53,6 +53,7 @@ class SettingsWindow : Window{
 
 		//Providers
 		auto providersCont = new Box(Orientation.HORIZONTAL, 0);
+		notebook.appendPage(providersCont, "Providers");
 		with(providersCont){
 			auto stackSidebar = new StackSidebar;
 			packStart(stackSidebar, false, false, 0);
@@ -105,7 +106,7 @@ class SettingsWindow : Window{
 
 						//Fill
 						foreach(setting ; provider.getSettings){
-							auto se = new ProviderSettingWidget(setting);
+							auto se = new ProviderSettingWidget(provider, setting, this);
 							add(se);
 						}
 
@@ -119,7 +120,12 @@ class SettingsWindow : Window{
 
 			}
 		}
-		notebook.appendPage(providersCont, "Providers");
+
+		addOnDelete((event, win){
+			import mainwindow;
+			(cast(MainWindow)parent).updateEntriesList();
+			return false;
+		});
 
 		showAll();
 	}
@@ -131,15 +137,66 @@ private:
 }
 
 class ProviderSettingWidget : Box{
-	this(ref Provider.Setting setting){
+	this(Provider provider, ref Provider.Setting setting, Window win){
 		super(Orientation.HORIZONTAL, 5);
 
-		packStart(new Label(setting.name), false, false, 0);
+		auto nameLabel = new Label(setting.name);
+		packStart(nameLabel, false, false, 0);
+		nameLabel.setTooltipMarkup(setting.description);
 
-		setTooltipMarkup(setting.description);
+		
 
-		auto entry = new GtkEntry;
-		packEnd(entry, true, true, 0);
-		entry.setText(setting.value);
+		auto type = setting.valueType.to!(Provider.SettingType);
+		//TODO catch ConvException
+
+		final switch(type) with(Provider.SettingType){
+			case Folder:{
+				import gtk.FileChooserButton;
+				auto button = new FileChooserButton(
+					"Select a folder for '"~setting.name~"'",
+					FileChooserAction.SELECT_FOLDER);
+				packEnd(button, true, true, 0);
+				with(button){
+					setLocalOnly(true);
+					setCurrentFolderUri(setting.value);
+					addOnSelectionChanged((fc){
+						provider.setSettingValue(setting.code, fc.getUri);
+					});
+				}
+			}break;
+			case File:{
+				import gtk.FileChooserButton;
+				auto button = new FileChooserButton(
+					"Select a file for '"~setting.name~"'",
+					FileChooserAction.SAVE);
+				packEnd(button, true, true, 0);
+				with(button){
+					setLocalOnly(true);
+					setCurrentFolderUri(setting.value);
+					addOnSelectionChanged((fc){
+						provider.setSettingValue(setting.code, fc.getUri);
+					});
+				}
+			}break;
+			case Path:{
+				auto entry = new GtkEntry;
+				packEnd(entry, true, true, 0);
+				entry.setText(setting.value);
+			}break;
+			case String:{
+				auto entry = new GtkEntry;
+				packEnd(entry, true, true, 0);
+				entry.setText(setting.value);
+			}break;
+			case Int:{
+
+			}break;
+			case Float:{
+
+			}break;
+			case Bool:{
+
+			}break;
+		}
 	}
 }

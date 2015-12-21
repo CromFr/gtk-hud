@@ -52,18 +52,18 @@ class Provider{
 	struct Setting{
 		string name;
 		string description;
-		string type;
+		string valueType;
 		string value;
 		string code;
 	}
-	enum SettingType : string{
-		FOLDER = "folder",
-		FILE   = "file",
-		PATH   = "path",
-		STRING = "string",
-		INT    = "int",
-		FLOAT  = "float",
-		BOOL  = "bool",
+	enum SettingType{
+		Folder,
+		File,
+		Path,
+		String,
+		Int,
+		Float,
+		Bool,
 	}
 
 	Entry[] entries(){

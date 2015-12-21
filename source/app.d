@@ -75,7 +75,7 @@ class App : Application{
 		//setAccelsForAction()
 	}
 
-	const(const Provider[]) getProviders(){
+	Provider[] getProviders(){
 		return providers;
 	}
 
