@@ -7,8 +7,8 @@ import gtk.Stack;
 import gtk.Box;
 import gtk.ButtonBox;
 import gtk.Separator;
-import gtk.CheckButton;
 import gtk.Entry; alias GtkEntry=gtk.Entry.Entry;
+import gtk.Switch;
 
 import provider;
 
@@ -48,16 +48,26 @@ class SettingsWindow : Window{
 				auto box = new Box(Orientation.VERTICAL, 0);
 				stack.addTitled(box, name, name);
 				with(box){
-					auto enableButton = new CheckButton("Enable provider");
-					add(enableButton);
-					with(enableButton){
-						//TODO: setActive(config value)
+					Switch enableButton;
+
+					auto enableButtonBox = new Box(Orientation.HORIZONTAL, 5);
+					add(enableButtonBox);
+					with(enableButtonBox){
+						enableButton = new Switch;
+						enableButtonBox.add(enableButton);
+						with(enableButton){
+							//TODO: setActive(config value)
+							addOnStateSet((newstate, but){
+								import std.stdio; writeln("Activated ",newstate);
+								new ListBox(cast(GtkListBox*)(but.getData("target")))
+									.setSensitive(newstate);
+								return false;
+							});
+						}
 						
-						addOnToggled((but){
-							new ListBox(cast(GtkListBox*)(but.getData("target")))
-								.setSensitive(but.getActive());
-						});
+						enableButtonBox.add(new Label("Enable provider"));
 					}
+					
 
 					auto listBox = new ListBox;
 					packEnd(listBox, true, true, 0);
@@ -76,11 +86,8 @@ class SettingsWindow : Window{
 						}
 
 						enableButton.setData("target", listBox.getListBoxStruct);
+						setSensitive(enableButton.getState());
 					}
-
-
-					//Update enable button
-					enableButton.toggled();
 				}
 
 				
