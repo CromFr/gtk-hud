@@ -6,30 +6,8 @@ import std.string;
 import std.typecons;
 import luad.all;
 
-import entry;
+public import entry;
 
-
-class ProviderList{
-	this(in string providerPath){
-		import std.path;
-		dirEntries(providerPath, "*.lua", SpanMode.depth)
-			.each!((file){
-				providers ~= new Provider(file);
-			});
-	}
-
-	
-	Entry[] entries(){
-		Entry[] ret;
-		foreach(p ; providers){
-			ret ~= p.entries;
-		}
-		return ret;
-	}
-
-
-	Provider[] providers;
-}
 
 
 class Provider{
@@ -88,7 +66,6 @@ class Provider{
 		BOOL  = "bool",
 	}
 
-package:
 	Entry[] entries(){
 		import std.stdio;
 		LuaEntry[] ret = lua

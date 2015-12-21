@@ -4,6 +4,16 @@ import std.algorithm;
 import std.string;
 import std.process;
 
+import gtk.Box;
+import gtk.Label;
+import gtk.Widget;
+import gdk.Event;
+import gtk.ListBox;
+import gtk.ListBoxRow;
+import gtk.TextView;
+import gtk.ScrolledWindow;
+import gtk.TextBuffer;
+
 import provider;
 import search;
 import entry;
@@ -11,56 +21,18 @@ import settingswindow;
 
 
 import gtk.MainWindow;
-class Window : MainWindow{
-	import gtk.ListBox;
-	import gtk.ListBoxRow;
-	import gtk.TextView;
-	import gtk.ScrolledWindow;
+class MainWindow : gtk.MainWindow.MainWindow{
 
 	this(){
-		import gtk.Box;
-		import gtk.Label;
-		import gtk.Widget;
-		import gtk.StyleContext;
-		import gtk.CssProvider;
-		import gdk.Event;
-
 		super("GtkHUD");
 		setDecorated(false);
 		setPosition(WindowPosition.CENTER_ALWAYS);
 		setResizable(false);
 		setSizeRequest(400, 600);
 
+		//Transparency
 		setVisual(getScreen.getRgbaVisual);
 		setOpacity(0.95);
-
-		auto css = new CssProvider;
-		css.loadFromData(q"{
-			.hud-searchbox{
-				font-size: 130%;
-			}
-			.hud-entry-shortcut{
-				padding: 2px;
-				font-family: "monospace";
-				font-size: 75%;
-				color: #CCC;
-				background-color: #666;
-			}
-			.hud-entry-name{
-				font-size: 110%;
-				font-weight: bold;
-			}
-			.hud-entry-fullname{
-				opacity: 0.5;
-			}
-			.hud-settings-bgdarker{
-				background-color: darker (rgba(0,0,0,0.1));
-			}
-			.hud-settings-nobg{
-				background-color: rgba(0,0,0,0);
-			}
-		}");
-		StyleContext.addProviderForScreen(getScreen, css, 800);
 
 		auto maincont = new Box(Orientation.VERTICAL, 0);
 		add(maincont);
@@ -133,7 +105,6 @@ class Window : MainWindow{
 			});
 
 		addOnKeyPress((Event e, Widget w){
-			
 
 			import gdk.Keysyms;
 			uint keyval;
@@ -166,12 +137,27 @@ class Window : MainWindow{
 			}
 		});
 
-		auto prov = new ProviderList("providers/");
-		auto entries = prov.entries;
-		populateListBox(entries);
+		updateEntriesList();
 		showAll();
 	}
 
+
+	void updateEntriesList(){
+		import app;
+		listBox.removeAll();
+		listBoxLength = 0;
+
+		foreach(uint i, e ; App.get.getAllEntries){
+			auto wid = new EntryWidget(e, i);
+			listBox.add(wid);
+			listBoxLength++;
+		}
+		listBox.showAll();
+		listBox.selectRow(listBox.getRowAtIndex(0));
+	}
+
+
+private:
 	void selectRowRelative(int delta){
 		if(listBoxLength==0) return;
 
@@ -219,27 +205,11 @@ class Window : MainWindow{
 		}
 	}
 
-
 	TextView searchBox;
 	ListBox listBox;
 	ScrolledWindow listBoxScroll;
 	uint listBoxLength;
 
-private:
-	import gtk.TextBuffer;
-	void populateListBox(ref Entry[] db){
-
-		listBox.removeAll();
-		listBoxLength = 0;
-
-		foreach(uint i, e ; db){
-			auto wid = new EntryWidget(e, i);
-			listBox.add(wid);
-			listBoxLength++;
-		}
-		listBox.showAll();
-		listBox.selectRow(listBox.getRowAtIndex(0));
-	}
 }
 
 

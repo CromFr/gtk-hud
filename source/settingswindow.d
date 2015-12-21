@@ -5,9 +5,10 @@ import gtk.ListBox;
 import gtk.Label;
 import gtk.Stack;
 import gtk.Box;
+import gtk.ButtonBox;
 import gtk.Separator;
-import gtk.Entry;
 import gtk.CheckButton;
+import gtk.Entry; alias GtkEntry=gtk.Entry.Entry;
 
 import provider;
 
@@ -27,8 +28,6 @@ class SettingsWindow : Window{
 		notebook.appendPage(new Label("yolo"), "General");
 
 		//Providers
-		//TODO: move provider list to a GTKApplication (instead of MainWindow)
-		auto providerList = new ProviderList("providers/");//TODO: bad design to fix
 		auto providersCont = new Box(Orientation.HORIZONTAL, 0);
 		with(providersCont){
 			auto stackSidebar = new StackSidebar;
@@ -42,7 +41,8 @@ class SettingsWindow : Window{
 				stackSidebar.setStack(stack);
 			}
 			
-			foreach(provider ; providerList.providers){
+			import app : App;
+			foreach(provider ; App.get.getProviders){
 				string name = provider.name;
 
 				auto box = new Box(Orientation.VERTICAL, 0);
@@ -107,7 +107,7 @@ class ProviderSettingWidget : Box{
 
 		setTooltipMarkup(setting.description);
 
-		auto entry = new Entry;
+		auto entry = new GtkEntry;
 		packEnd(entry, false, false, 0);
 		entry.setText(setting.value);
 	}
