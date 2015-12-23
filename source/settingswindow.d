@@ -11,6 +11,7 @@ import gtk.Entry; alias GtkEntry=gtk.Entry.Entry;
 import gtk.Switch;
 
 import provider;
+import settings;
 
 import gtk.Window;
 class SettingsWindow : Window{
@@ -106,8 +107,9 @@ class SettingsWindow : Window{
 
 						//Fill
 						foreach(setting ; provider.getSettings){
-							auto se = new ProviderSettingWidget(provider, setting, this);
-							add(se);
+							auto sw = new SettingWidget(setting);
+							add(sw);
+							//TODO: addOnChanged : set provider's setting
 						}
 
 						enableButton.setData("target", listBox.getListBoxStruct);
@@ -136,67 +138,3 @@ private:
 
 }
 
-class ProviderSettingWidget : Box{
-	this(Provider provider, ref Provider.Setting setting, Window win){
-		super(Orientation.HORIZONTAL, 5);
-
-		auto nameLabel = new Label(setting.name);
-		packStart(nameLabel, false, false, 0);
-		nameLabel.setTooltipMarkup(setting.description);
-
-		
-
-		auto type = setting.valueType.to!(Provider.SettingType);
-		//TODO catch ConvException
-
-		final switch(type) with(Provider.SettingType){
-			case Folder:{
-				import gtk.FileChooserButton;
-				auto button = new FileChooserButton(
-					"Select a folder for '"~setting.name~"'",
-					FileChooserAction.SELECT_FOLDER);
-				packEnd(button, true, true, 0);
-				with(button){
-					setLocalOnly(true);
-					setCurrentFolderUri(setting.value);
-					addOnSelectionChanged((fc){
-						provider.setSettingValue(setting.code, fc.getUri);
-					});
-				}
-			}break;
-			case File:{
-				import gtk.FileChooserButton;
-				auto button = new FileChooserButton(
-					"Select a file for '"~setting.name~"'",
-					FileChooserAction.SAVE);
-				packEnd(button, true, true, 0);
-				with(button){
-					setLocalOnly(true);
-					setCurrentFolderUri(setting.value);
-					addOnSelectionChanged((fc){
-						provider.setSettingValue(setting.code, fc.getUri);
-					});
-				}
-			}break;
-			case Path:{
-				auto entry = new GtkEntry;
-				packEnd(entry, true, true, 0);
-				entry.setText(setting.value);
-			}break;
-			case String:{
-				auto entry = new GtkEntry;
-				packEnd(entry, true, true, 0);
-				entry.setText(setting.value);
-			}break;
-			case Int:{
-
-			}break;
-			case Float:{
-
-			}break;
-			case Bool:{
-
-			}break;
-		}
-	}
-}

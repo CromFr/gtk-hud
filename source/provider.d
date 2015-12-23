@@ -6,6 +6,8 @@ import std.string;
 import std.typecons;
 import luad.all;
 
+import settings;
+
 public import entry;
 
 
@@ -47,24 +49,7 @@ class Provider{
 	const Setting[] getSettings(){return settings.dup;}
 
 	immutable string name;
-
-
-	struct Setting{
-		string name;
-		string description;
-		string valueType;
-		string value;
-		string code;
-	}
-	enum SettingType{
-		Folder,
-		File,
-		Path,
-		String,
-		Int,
-		Float,
-		Bool,
-	}
+	
 
 	Entry[] entries(){
 		import std.stdio;
