@@ -74,7 +74,7 @@ class SettingWidget : Box{
 						//provider.setSettingValue(setting.code, fc.getUri);
 						import gobject.Value;
 						auto thisValue = new Value;
-						thisValue.setObject(cast(void*)this);
+						thisValue.setObject(this);
 						auto params = [thisValue];
 
 						auto valueret = new Value;

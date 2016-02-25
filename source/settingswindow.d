@@ -42,8 +42,6 @@ class SettingsWindow : Window{
 					setDrawValue(true);
 					setDigits(2);
 					addOnChangeValue((scrollType, newValue, rng){
-						import std.stdio;
-						writeln("Opacity: ",newValue);
 						parent.setOpacity(newValue);
 						//TODO: set in config
 						return false;
