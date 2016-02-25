@@ -11,3 +11,4 @@ gtk-hud
 *.exe
 *.lib
 *.dll
+*.so
