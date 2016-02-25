@@ -12,3 +12,6 @@ gtk-hud
 *.lib
 *.dll
 *.so
+
+#Project
+*.sublime-workspace
