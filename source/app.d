@@ -1,6 +1,7 @@
 import std.stdio;
 import std.path;
 import std.file;
+import config;
 
 void main(string[] args)
 {
@@ -37,35 +38,13 @@ class App : Application{
 		instance = this;
 
 		auto css = new CssProvider;
-		css.loadFromData(q"{
-			.hud-searchbox{
-				font-size: 130%;
-			}
-			.hud-entry-shortcut{
-				padding: 2px;
-				font-family: "monospace";
-				font-size: 75%;
-				color: #CCC;
-				background-color: #666;
-			}
-			.hud-entry-name{
-				font-size: 110%;
-				font-weight: bold;
-			}
-			.hud-entry-fullname{
-				opacity: 0.5;
-			}
-			.hud-settings-bgdarker{
-				background-color: darker (rgba(0,0,0,0.1));
-			}
-			.hud-settings-nobg{
-				background-color: rgba(0,0,0,0);
-			}
-		}");
+		css.loadFromData(readText(CFG_PATH_RES~"/style.css"));
 		StyleContext.addProviderForScreen(Screen.getDefault, css, 800);
 
+		if(!CFG_PATH_USERCFG.exists)
+			mkdirRecurse(CFG_PATH_USERCFG);
 
-		dirEntries("providers/", "*.lua", SpanMode.depth)
+		dirEntries(CFG_PATH_USERCFG, "*.lua", SpanMode.depth)
 			.each!((file){
 				providers ~= new Provider(file);
 			});
