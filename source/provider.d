@@ -6,6 +6,7 @@ import std.string;
 import std.typecons;
 import luad.all;
 
+import config;
 import settings;
 
 public import entry;
@@ -17,12 +18,17 @@ class Provider{
 		import std.path;
 		luaFile = file;
 		name = file.baseName.stripExtension;
+
+		//TODO load value from config
+		enabled = true;
+
 		reloadFile();
 	}
 	void reloadFile(){
 		import luaapi;
 
-		if(lua !is null)lua.destroy();
+		if(lua !is null)
+			lua.destroy();
 		lua = new LuaState;
 		lua.openLibs();
 		lua.luaapiSetupState();
@@ -30,25 +36,36 @@ class Provider{
 		lua.doFile(luaFile);
 		lua.doString("init()");
 
-		settings.destroy();
-		auto settingsLua = lua.get!(Setting[string])("settings");
-		foreach(code, setting ; settingsLua){
-			setting.code = code;
-			settings~=setting;
+		settings = null;//TODO: maybe destroy?
+		settings = new Settings(lua.get!(LuaSetting[string])("settings"));
+
+		auto settingsPath = CFG_PATH_USERCFG~"/providers/"~name~".json";
+		if(!settingsPath.exists)std.file.write(settingsPath, null);
+
+		import std.json;
+		JSONValue jsonSettings = parseJSON(settingsPath.readText);
+		if(jsonSettings.type == JSON_TYPE.OBJECT){
+			string[string] jsonSettingsAA;
+			foreach(key, value ; jsonSettings.object){
+				jsonSettingsAA[key] = value.str;
+			}
+			settings.overrideSettings(jsonSettingsAA);
 		}
+		else{
+			assert(jsonSettings.isNull, settingsPath~" is not a valid setting file. Try removing it.");
+		}
+
+		settings.bindFile(DirEntry(settingsPath));
 	}
 
 	void execute(Entry entry){
 		lua.get!LuaFunction("execute").call(entry.luaEntry);
 	}
 
-	void setSettingValue(in string code, in string value){
-		//TODO
-		//lua["settings"][code]["value"] = value;
-	}
-	const Setting[] getSettings(){return settings.dup;}
 
 	immutable string name;
+	bool enabled;
+	Settings settings;
 	
 
 	Entry[] entries(){
@@ -60,8 +77,8 @@ class Provider{
 		return ret.map!((e){return Entry(e, this);}).array;
 	}
 
+
 private:
 	DirEntry luaFile;
 	LuaState lua;
-	Setting[] settings;
 }

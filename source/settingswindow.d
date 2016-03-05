@@ -12,6 +12,7 @@ import gtk.Switch;
 
 import provider;
 import settings;
+import settingswidgets;
 
 import gtk.Window;
 class SettingsWindow : Window{
@@ -80,7 +81,7 @@ class SettingsWindow : Window{
 						enableButton = new Switch;
 						enableButtonBox.add(enableButton);
 						with(enableButton){
-							//TODO: setActive(config value)
+							setActive(provider.enabled);
 
 							addOnStateSet((newstate, but){
 								new ListBox(cast(GtkListBox*)(but.getData("target")))
@@ -93,26 +94,10 @@ class SettingsWindow : Window{
 					}
 					
 
-					auto listBox = new ListBox;
-					packEnd(listBox, true, true, 0);
-					with(listBox){
-						getStyleContext().addClass("hud-settings-nobg");
-
-						auto placeholder = new Label("No settings for this provider");
-						placeholder.show();
-						setPlaceholder(placeholder);
-						setSelectionMode(SelectionMode.NONE);
-
-						//Fill
-						foreach(setting ; provider.getSettings){
-							auto sw = new SettingWidget(setting);
-							add(sw);
-							//TODO: addOnChanged : set provider's setting
-						}
-
-						enableButton.setData("target", listBox.getListBoxStruct);
-						setSensitive(enableButton.getState());
-					}
+					auto settingsWidget = new SettingsWidget(provider.settings);
+					packEnd(settingsWidget, true, true, 0);
+					enableButton.setData("target", settingsWidget.getListBoxStruct);
+					settingsWidget.setSensitive(enableButton.getState());
 				}
 
 				

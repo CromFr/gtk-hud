@@ -1,8 +1,8 @@
 {
+	"fileVersion": 1,
 	"versions": {
-		"gtk-d": "3.2.1",
 		"luad": "~master",
+		"gtk-d": "3.2.2",
 		"dunit": "1.0.11"
-	},
-	"fileVersion": 1
+	}
 }

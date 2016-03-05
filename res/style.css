@@ -21,3 +21,8 @@
 .hud-settings-nobg{
 	background-color: rgba(0,0,0,0);
 }
+
+
+GtkEntry.invalid{
+	box-shadow: 0 0 0 1px #F70;
+}

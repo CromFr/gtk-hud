@@ -43,8 +43,10 @@ class App : Application{
 
 		if(!CFG_PATH_USERCFG.exists)
 			mkdirRecurse(CFG_PATH_USERCFG);
+		if(!(CFG_PATH_USERCFG~"/providers").exists)
+			mkdirRecurse(CFG_PATH_USERCFG~"/providers");
 
-		dirEntries(CFG_PATH_USERCFG, "*.lua", SpanMode.depth)
+		dirEntries(CFG_PATH_PROVIDERS, "*.lua", SpanMode.depth)
 			.each!((file){
 				providers ~= new Provider(file);
 			});

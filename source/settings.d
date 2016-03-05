@@ -1,152 +1,208 @@
-import std.conv;
+module settings;
 
-import gobject.CClosure;
-import gobject.Type;
-import gobject.Signals;
-import gtk.Label;
-import gtk.Entry;
+import std.conv : to, ConvException;
 
-struct Setting{
+struct LuaSetting{
 	string name;
 	string description;
 	string valueType;
 	string value;
 	string min;
 	string max;
-	string code;
-}
-enum SettingType{
-	Folder,
-	File,
-	Path,
-	String,
-	Int,
-	Float,
-	Bool,
 }
 
-import gtk.Box;
-class SettingWidget : Box{
-	//public static GType getType()
-	//{
-	//	return gtk_toggle_button_get_type();
-	//}
-
-	this(in Setting setting){
-		super(Orientation.HORIZONTAL, 5);
-		//Type.registerDynamic(GType parentType, string typeName, TypePluginIF plugin, GTypeFlags flags)
-
-		//Static initialization
-		static bool staticInit = false;
-		if(staticInit==false){
-			staticInit = true;
-			signalSettingChanged = Signals.newv(
-				"setting-changed",
-				getType(),
-				SignalFlags.RUN_FIRST,
-				null, null, null,
-				null, GType.NONE, [getType()]);
-
-			//CClosure.marshalVOIDPOINTER
-		}
-		
-
-
-		auto nameLabel = new Label(setting.name);
-		packStart(nameLabel, false, false, 0);
-		nameLabel.setTooltipMarkup(setting.description);
-
-		auto type = setting.valueType.to!(SettingType);
-		//TODO catch ConvException
-
-		final switch(type) with(SettingType){
-			case Folder:{
-				import gtk.FileChooserButton;
-				auto button = new FileChooserButton(
-					"Select a folder for '"~setting.name~"'",
-					FileChooserAction.SELECT_FOLDER);
-				packEnd(button, true, true, 0);
-				with(button){
-					setLocalOnly(true);
-					setCurrentFolderUri(setting.value);
-					addOnSelectionChanged((fc){
-						import std.stdio; stderr.writeln("TEEEEST");
-						//provider.setSettingValue(setting.code, fc.getUri);
-						import gobject.Value;
-						auto thisValue = new Value;
-						thisValue.setObject(this);
-						auto params = [thisValue];
-
-						auto valueret = new Value;
-						Signals.emitv(params, signalSettingChanged, 0, valueret);
-					});
-				}
-			}break;
-			case File:{
-				import gtk.FileChooserButton;
-				auto button = new FileChooserButton(
-					"Select a file for '"~setting.name~"'",
-					FileChooserAction.SAVE);
-				packEnd(button, true, true, 0);
-				with(button){
-					setLocalOnly(true);
-					setCurrentFolderUri(setting.value);
-					//addOnSelectionChanged((fc){
-					//	provider.setSettingValue(setting.code, fc.getUri);
-					//});
-				}
-			}break;
-			case Path:{
-				import gtk.Entry : Entry;
-				auto entry = new Entry;
-				packEnd(entry, true, true, 0);
-				entry.setText(setting.value);
-			}break;
-			case String:{
-				import gtk.Entry : Entry;
-				auto entry = new Entry;
-				packEnd(entry, true, true, 0);
-				entry.setText(setting.value);
-			}break;
-			case Int:{
-
-			}break;
-			case Float:{
-
-			}break;
-			case Bool:{
-
-			}break;
-		}
+class Setting{
+	this(in LuaSetting luaSetting){
+		data = luaSetting;
+		defaultValue = data.value;
 	}
 
+	LuaSetting data;
+	alias data this;
 
-	void delegate(SettingWidget*)[] onSettingChanged;
-	void addOnSettingChanged(void delegate(SettingWidget*) dlg, ConnectFlags connectFlags=cast(ConnectFlags)0)
-	{
-		if("setting-changed" !in connectedSignals)
-		{
-			Signals.connectData(
-				this,
-				"setting-changed",
-				cast(GCallback)&callBackSettingChanged,
-				cast(void*)cast(SettingWidget)this,
-				null,
-				connectFlags);
-			connectedSignals["setting-changed"] = 1;
+	@property{
+		const string value(){return data.value;}
+		const T value(T)(){
+			try return data.value.to!T;
+			catch(ConvException e) throw new SettingValueException("Could not convert '"~data.value~"' to "~T.stringof, __FILE__, __LINE__, e);
 		}
-		onSettingChanged ~= dlg;
-	}
-	extern(C) static void callBackSettingChanged(SettingWidget* settingWidget)
-	{
-		foreach ( void delegate(SettingWidget*) dlg; settingWidget.onSettingChanged )
-		{
-			dlg(settingWidget);
-		}
-	}
+		void value(in string newvalue){
+			import std.file : exists, isDir, isFile, FileException;
 
+			final switch(valueType.to!SettingType) with(SettingType){
+				case Folder:{
+					//try{
+					//	if(!exists(newvalue))
+					//		throw new SettingValueException("Path '"~newvalue.to!string~"' does not exist");
+					//	if(!isDir(newvalue))
+					//		throw new SettingValueException("Path '"~newvalue.to!string~"' is not a directory");
+					//}catch(FileException e){
+					//	throw new SettingValueException("File exception", __FILE__, __LINE__, e);
+					//}
+				}break;
+				case File:{
+					//try{
+					//	if(!exists(newvalue))
+					//		throw new SettingValueException("Path '"~newvalue.to!string~"' does not exist");
+					//	if(!isFile(newvalue))
+					//		throw new SettingValueException("Path '"~newvalue.to!string~"' is not a directory");
+					//}catch(FileException e){
+					//	throw new SettingValueException("File exception", __FILE__, __LINE__, e);
+					//}
+				}break;
+				case Path:{
+					//try{
+					//	if(!exists(newvalue))
+					//		throw new SettingValueException("Path '"~newvalue.to!string~"' does not exist");
+					//}catch(FileException e){
+					//	throw new SettingValueException("File exception", __FILE__, __LINE__, e);
+					//}
+				}break;
+				case String:{
+				}break;
+				case Int:{
+					long valueInt;
+					try valueInt = newvalue.to!long;
+					catch(ConvException e)
+						throw new SettingValueException("Can't convert "~newvalue~" to long", __FILE__, __LINE__, e);
+					if(min !is null && valueInt<min.to!long)
+						throw new SettingValueException("Value "~newvalue~" is lower than minimum ("~min~")");
+					if(max !is null && valueInt>max.to!long)
+						throw new SettingValueException("Value "~newvalue~" is larger than maximum ("~max~")");
+				}break;
+
+				case Float:{
+					double valueFloat;
+					try valueFloat = newvalue.to!double;
+					catch(ConvException e)
+						throw new SettingValueException("Can't convert "~newvalue~" to double", __FILE__, __LINE__, e);
+					if(min !is null && valueFloat<min.to!double)
+						throw new SettingValueException("Value "~newvalue~" is lower than minimum ("~min~")");
+					if(max !is null && valueFloat>max.to!double)
+						throw new SettingValueException("Value "~newvalue~" is larger than maximum ("~max~")");
+				}break;
+
+				case Bool:{
+					try newvalue.to!bool;
+					catch(ConvException e)
+						throw new SettingValueException("Can't convert "~newvalue~" to bool", __FILE__, __LINE__, e);
+				}break;
+
+				case Combo:{
+					//TODO
+				}break;
+			}
+
+			data.value = newvalue;
+			if(owner !is null){
+				owner.notifyChange(name);
+			}
+		}
+	}
+	immutable string defaultValue;
+
+package:
+
+	//Sets an oner that will be notified if setting value changes
+	void bindOwner(Settings settings){
+		owner = settings;
+	}
 
 private:
-	static uint signalSettingChanged;
+	Settings owner = null;
 
+}
+
+enum SettingType{
+	///Path to an existing folder
+	Folder,
+
+	///Path to an existing file
+	File,
+
+	///Path to a file or a folder
+	Path,
+
+	///String, possibly multi-line
+	String,
+
+	///Signed integer (long)
+	Int,
+
+	///Signed floating number (double)
+	Float,
+
+	///true/false
+	Bool,
+
+	///Choice between multiple strings (via a Combo box)
+	Combo,
+}
+
+class Settings{
+	import std.file;
+	import std.json;
+
+	this(LuaSetting[string] luaSettingList){
+		foreach(key, luaSetting ; luaSettingList){
+			auto setting = new Setting(luaSetting);
+			settings[key] = setting;
+			setting.bindOwner(this);
+		}
+	}
+
+	void overrideSettings(in string[string] values){
+		foreach(name, value ; values){
+			if(name in settings){
+				settings[name].value = value;
+			}
+			else
+				throw new SettingValueException("'"~name~"' is not in settings list: "~settings.keys.to!string);
+		}
+	}
+
+	//Once binded, any change to any setting will be saved on the file
+	void bindFile(in DirEntry userSettingsFile){
+		file = userSettingsFile;
+		binded = true;
+	}
+
+
+	alias settings this;
+	Setting[string] settings;
+
+package:
+	void notifyChange(string settingName){
+		//Save to file
+		import std.file : fwrite = write;
+		import std.algorithm : each;
+
+		JSONValue json;
+		settings.each!((key, setting){
+				if(setting.value != setting.defaultValue)
+					json[key] = setting.value;
+			});
+
+		if(binded){
+			//TODO: add timeout until write to avoid writing too often (5 sec?)
+			file.fwrite(json.toPrettyString());
+		}
+	}
+
+private:
+	bool binded = false;
+	DirEntry file;
+
+}
+
+
+
+
+
+
+class SettingValueException : Exception{
+	public @safe pure nothrow 
+	this(string message, string file =__FILE__, size_t line = __LINE__, Throwable next = null){
+		super(message, file, line, next);
+	}
 }
