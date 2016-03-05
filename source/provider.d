@@ -56,6 +56,11 @@ class Provider{
 		}
 
 		settings.bindFile(DirEntry(settingsPath));
+
+		foreach(code, setting ; settings){
+			lua.doString("settings."~code~".value = [["~setting.value~"]]");
+		}
+
 	}
 
 	void execute(Entry entry){
@@ -74,7 +79,9 @@ class Provider{
 			.get!LuaFunction("getEntries")
 			.call!(LuaEntry[])();
 
-		return ret.map!((e){return Entry(e, this);}).array;
+		return ret
+			.map!((e){return Entry(e, this);})
+			.array;
 	}
 
 

@@ -150,6 +150,7 @@ class SettingWidget : Box{
 				import gtk.Switch : Switch;
 				auto sw = new Switch;
 				packEnd(sw, false, false, 0);
+				sw.setState(setting.value.to!bool);
 				sw.addOnStateSet((newstate, but){
 					setting.value = newstate.to!string;
 					return false;
